@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silver Calculator</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { display: flex; gap: 20px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 800px; }
+        .input-section, .result-section { flex: 1; padding: 20px; }
+        .result-section { background-color: #2e7d32; color: white; border-radius: 12px; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+        input[type="number"], input[type="range"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        
+        .breakdown-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #458e4a; padding-bottom: 5px; }
+        .total-weight { font-size: 24px; font-weight: bold; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="input-section">
+        <div class="form-group">
+            <label>Amount (INR)</label>
+            <input type="number" id="amount" value="15635" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label>Current Silver Rate (per gram)</label>
+            <input type="number" id="rate" value="260" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label>Making Charge (%)</label>
+            <input type="number" id="makingCharge" value="3" oninput="calculate()">
+        </div>
+        <div class="form-group">
+            <label><input type="checkbox" id="includeGST" checked onchange="calculate()"> Include GST (3%)</label>
+        </div>
+    </div>
+
+    <div class="result-section">
+        <div style="font-size: 0.9em;">Silver Weight</div>
+        <h1 id="outputWeight">0 grams</h1>
+        <hr>
+        <div class="breakdown-row"><span>Amount Available</span> <span id="dispAmount">0</span></div>
+        <div class="breakdown-row"><span>Base Value</span> <span id="dispBase">0</span></div>
+        <div class="breakdown-row"><span>Making Charges</span> <span id="dispMaking">0</span></div>
+        <div class="breakdown-row"><span>Subtotal</span> <span id="dispSubtotal">0</span></div>
+        <div class="breakdown-row"><span>GST</span> <span id="dispGST">0</span></div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // Get values
+        const amount = parseFloat(document.getElementById('amount').value) || 0;
+        const rate = parseFloat(document.getElementById('rate').value) || 0;
+        const makingChargePercent = parseFloat(document.getElementById('makingCharge').value) || 0;
+        const includeGST = document.getElementById('includeGST').checked;
+        const gstRate = includeGST ? 0.03 : 0;
+
+        if (rate <= 0) return;
+
+        // Math Logic
+        // Amount = (Base + Base * Making) * (1 + GST)
+        // Base = Amount / ((1 + Making) * (1 + GST))
+        const makingDecimal = makingChargePercent / 100;
+        const divisor = (1 + makingDecimal) * (1 + gstRate);
+        const baseValue = amount / divisor;
+        
+        const makingCharges = baseValue * makingDecimal;
+        const subtotal = baseValue + makingCharges;
+        const gstAmount = subtotal * gstRate;
+        const silverWeight = baseValue / rate;
+
+        // Update UI
+        document.getElementById('outputWeight').innerText = silverWeight.toFixed(3) + ' grams';
+        document.getElementById('dispAmount').innerText = '₹' + Math.round(amount);
+        document.getElementById('dispBase').innerText = '₹' + Math.round(baseValue);
+        document.getElementById('dispMaking').innerText = '₹' + Math.round(makingCharges);
+        document.getElementById('dispSubtotal').innerText = '₹' + Math.round(subtotal);
+        document.getElementById('dispGST').innerText = '₹' + Math.round(gstAmount);
+    }
+
+    // Initialize calculation on load
+    calculate();
+</script>
+
+</body>
+</html>
